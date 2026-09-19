@@ -1,0 +1,59 @@
+.card-swap-container {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  transform: translate(5%, 20%);
+  transform-origin: bottom right;
+
+  perspective: 900px;
+  overflow: visible;
+}
+
+/* Centered showcase stack floating freely */
+.card-swap-container.centered-stack {
+  position: relative;
+  bottom: auto;
+  right: auto;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  transform-origin: center center;
+}
+
+/* The card base wrapper is completely transparent so no phantom box/rectangle ever shows */
+.card {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+
+  transform-style: preserve-3d;
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  cursor: pointer;
+}
+
+.card:hover {
+  z-index: 100 !important;
+}
+
+@media (max-width: 768px) {
+  .card-swap-container:not(.centered-stack) {
+    transform: scale(0.75) translate(25%, 25%);
+  }
+  .card-swap-container.centered-stack {
+    transform: scale(0.75) translate(-66%, -66%);
+  }
+}
+
+@media (max-width: 520px) {
+  .card-swap-container:not(.centered-stack) {
+    transform: scale(0.55) translate(25%, 25%);
+  }
+  .card-swap-container.centered-stack {
+    transform: scale(0.55) translate(-90%, -90%);
+  }
+}
