@@ -50,6 +50,46 @@ The entire stack compiles into a single **66 MB Alpine Linux container**:
 
 ---
 
+## Repository Structure
+
+```text
+NotesScribe/
+├── .github/
+│   └── workflows/
+│       └── ci.yml              # Automated CI build & typecheck pipeline
+├── client/                     # React 18 + Vite + Tailwind CSS frontend
+│   ├── public/                 # Static public assets (offline handwriting font)
+│   └── src/
+│       ├── components/
+│       │   ├── stickers/       # Ephemera drawer and placed sticker items
+│       │   ├── ui/             # SVG handwriting vector component
+│       │   ├── BoardTabs.tsx   # Seamless baseline journal tab switcher
+│       │   ├── Navbar.tsx      # Top navigation bar with search & filters
+│       │   ├── NoteModal.tsx   # Note creation and editor modal
+│       │   ├── PinboardNote.tsx# Draggable keepsake note component
+│       │   ├── PinboardView.tsx# Freeform scrapbook canvas workspace
+│       │   ├── ScrapbookBackground.tsx # Layered vintage background & florals
+│       │   └── SplashScreen.tsx# Single-stroke cursive ink splash screen
+│       ├── types/              # TypeScript data model interfaces
+│       ├── utils/              # REST API client and local storage helpers
+│       ├── App.tsx             # Main application controller & sync engine
+│       └── main.tsx            # React application entry point
+├── server/                     # Express 5 + TypeScript + Mongoose backend
+│   └── src/
+│       ├── models/             # Mongoose schemas (Board, Note, Sticker)
+│       ├── routes/             # Express API route handlers
+│       └── index.ts            # Server entry point & static SPA host
+├── .dockerignore               # Container build exclusion rules
+├── .env.example                # Environment variable configuration template
+├── .gitignore                  # Git repository exclusion rules
+├── docker-compose.yml          # Multi-service local orchestration
+├── Dockerfile                  # Multi-stage production container build
+├── LICENSE                     # MIT License
+└── README.md                   # Project documentation
+```
+
+---
+
 ## DevOps & Cloud Infrastructure
 
 ### 1. Multi-Stage Containerization (Docker)
