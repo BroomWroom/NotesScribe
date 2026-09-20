@@ -29,15 +29,19 @@ function getScrapbookScatter(id: string, index: number) {
   return { rotation, tapeAngle };
 }
 
-export const PinboardNote: React.FC<PinboardNoteProps> = ({
-  note,
-  index,
-  isPinnedSection = false,
-  onPositionChange,
-  onEdit,
-  onDelete,
-  onTogglePin,
-}) => {
+export const PinboardNote = React.forwardRef<HTMLDivElement, PinboardNoteProps>(
+  (
+    {
+      note,
+      index,
+      isPinnedSection = false,
+      onPositionChange,
+      onEdit,
+      onDelete,
+      onTogglePin,
+    },
+    ref
+  ) => {
   const [copied, setCopied] = useState(false);
   const isDraggingRef = useRef(false);
   const colorTheme = COLOR_CONFIG[note.color] || COLOR_CONFIG.parchment;
@@ -93,6 +97,7 @@ export const PinboardNote: React.FC<PinboardNoteProps> = ({
 
   return (
     <motion.div
+      ref={ref}
       layout={isPinnedSection}
       drag={!isPinnedSection}
       dragMomentum={false}
@@ -263,4 +268,6 @@ export const PinboardNote: React.FC<PinboardNoteProps> = ({
       </div>
     </motion.div>
   );
-};
+});
+
+PinboardNote.displayName = 'PinboardNote';

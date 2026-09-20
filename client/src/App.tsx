@@ -17,6 +17,20 @@ import {
   getStoredStickers,
   saveStoredStickers,
 } from '@/utils/storage';
+import {
+  apiGetBoards,
+  apiCreateBoard,
+  apiUpdateBoard,
+  apiDeleteBoard,
+  apiGetNotes,
+  apiCreateNote,
+  apiUpdateNote,
+  apiDeleteNote,
+  apiGetStickers,
+  apiCreateSticker,
+  apiUpdateSticker,
+  apiDeleteSticker,
+} from '@/utils/api';
 
 const CATEGORIES = ['All', 'Quotes', 'Botanical', 'Ticket', 'Journal', 'Memories', 'Collect'];
 
@@ -109,6 +123,53 @@ export function App() {
     return stickers.filter((s) => (s.boardId || 'board-1') === activeBoardId);
   }, [stickers, activeBoardId]);
 
+  // Initial sync: fetch from MongoDB API, or seed if empty
+  useEffect(() => {
+    let isMounted = true;
+    async function syncWithDb() {
+      try {
+        const [dbBoards, dbNotes, dbStickers] = await Promise.all([
+          apiGetBoards(),
+          apiGetNotes(),
+          apiGetStickers(),
+        ]);
+
+        if (!isMounted) return;
+
+        // If database is completely empty on first launch, seed existing initial data to MongoDB
+        if (dbBoards.length === 0 && dbNotes.length === 0) {
+          const localBoards = getStoredBoards();
+          const localNotes = getStoredNotes();
+          const localStickers = getStoredStickers();
+
+          await Promise.all([
+            ...localBoards.map((b) => apiCreateBoard(b).catch(() => b)),
+            ...localNotes.map((n) => apiCreateNote(n).catch(() => n)),
+            ...localStickers.map((s) => apiCreateSticker(s).catch(() => s)),
+          ]);
+
+          if (isMounted) {
+            setBoards(localBoards);
+            setNotes(localNotes);
+            setStickers(localStickers);
+          }
+        } else {
+          // Use data from MongoDB
+          if (dbBoards.length > 0) setBoards(dbBoards);
+          if (dbNotes.length > 0) setNotes(dbNotes);
+          if (dbStickers.length > 0) setStickers(dbStickers);
+        }
+      } catch (err) {
+        console.warn('Backend server not connected yet, using local state:', err);
+      }
+    }
+
+    syncWithDb();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   // Board actions
   const handleCreateBoard = (title: string) => {
     const newBoard: Board = {
@@ -119,6 +180,7 @@ export function App() {
     };
     setBoards((prev) => [...prev, newBoard]);
     setActiveBoardId(newBoard.id);
+    apiCreateBoard(newBoard).catch(console.error);
   };
 
   const handleDeleteBoard = (id: string) => {
@@ -128,32 +190,34 @@ export function App() {
     if (activeBoardId === id) {
       setActiveBoardId(remaining[0].id);
     }
+    apiDeleteBoard(id).catch(console.error);
   };
 
   const handleRenameBoard = (id: string, newTitle: string) => {
+    const updatedAt = new Date().toISOString();
     setBoards((prev) =>
       prev.map((b) =>
         b.id === id
-          ? { ...b, title: newTitle, updatedAt: new Date().toISOString() }
+          ? { ...b, title: newTitle, updatedAt }
           : b
       )
     );
+    apiUpdateBoard(id, { title: newTitle, updatedAt }).catch(console.error);
   };
 
   // Note actions
   const handleSaveNote = (noteData: Omit<Note, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }) => {
     if (noteData.id) {
+      const updatedAt = new Date().toISOString();
+      const updatedFields = { ...noteData, updatedAt };
       setNotes((prev) =>
         prev.map((n) =>
           n.id === noteData.id
-            ? {
-                ...n,
-                ...noteData,
-                updatedAt: new Date().toISOString(),
-              }
+            ? { ...n, ...updatedFields }
             : n
         )
       );
+      apiUpdateNote(noteData.id, updatedFields).catch(console.error);
     } else {
       const currentBoardCount = notes.filter(
         (n) => (n.boardId || 'board-1') === activeBoardId && !n.isPinned
@@ -170,27 +234,35 @@ export function App() {
         updatedAt: new Date().toISOString(),
       };
       setNotes((prev) => [newNote, ...prev]);
+      apiCreateNote(newNote).catch(console.error);
     }
   };
 
   const handleDeleteNote = (id: string) => {
     setNotes((prev) => prev.filter((n) => n.id !== id));
+    apiDeleteNote(id).catch(console.error);
   };
 
   const handleTogglePin = (id: string) => {
+    const target = notes.find((n) => n.id === id);
+    if (!target) return;
+    const isPinned = !target.isPinned;
     setNotes((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, isPinned: !n.isPinned } : n))
+      prev.map((n) => (n.id === id ? { ...n, isPinned } : n))
     );
+    apiUpdateNote(id, { isPinned }).catch(console.error);
   };
 
   const handlePositionChange = (noteId: string, pos: { x: number; y: number }) => {
+    const updatedAt = new Date().toISOString();
     setNotes((prev) =>
       prev.map((n) =>
         n.id === noteId
-          ? { ...n, position: pos, updatedAt: new Date().toISOString() }
+          ? { ...n, position: pos, updatedAt }
           : n
       )
     );
+    apiUpdateNote(noteId, { position: pos, updatedAt }).catch(console.error);
   };
 
   const handleEditNote = (note: Note) => {
@@ -216,22 +288,26 @@ export function App() {
       scale: 1,
     };
     setStickers((prev) => [...prev, newSticker]);
+    apiCreateSticker(newSticker).catch(console.error);
   };
 
   const handleUpdateStickerPosition = (id: string, pos: { x: number; y: number }) => {
     setStickers((prev) =>
       prev.map((s) => (s.id === id ? { ...s, ...pos } : s))
     );
+    apiUpdateSticker(id, pos).catch(console.error);
   };
 
   const handleUpdateStickerRotation = (id: string, rotation: number) => {
     setStickers((prev) =>
       prev.map((s) => (s.id === id ? { ...s, rotation } : s))
     );
+    apiUpdateSticker(id, { rotation }).catch(console.error);
   };
 
   const handleDeleteSticker = (id: string) => {
     setStickers((prev) => prev.filter((s) => s.id !== id));
+    apiDeleteSticker(id).catch(console.error);
   };
 
   return (

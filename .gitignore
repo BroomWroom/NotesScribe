@@ -1,5 +1,39 @@
+# Dependencies
+node_modules/
+client/node_modules/
+server/node_modules/
+.pnp
+.pnp.js
+
+# Production Build Outputs
+dist/
+dist-ssr/
+build/
+client/dist/
+server/dist/
+*.local
+
+# Environment & Secrets (Never commit secrets to VCS)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.cert
+*.crt
+*.pfx
+*.p12
+credentials.json
+aws-credentials.json
+.aws/
+ScribeNote.pem
+
+# Database & Local Volume Persistence
+mongo-data/
+data/
+
 # Logs
-logs
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -7,26 +41,26 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
-
-# Editor directories and files
+# Operating System & Editor Files
+.DS_Store
+Thumbs.db
+Desktop.ini
+.idea/
 .vscode/*
 !.vscode/extensions.json
-.idea
-.DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
 
-# Environment & Secrets
-.env
-.env.*
-*.pem
+# Testing & Coverage
+coverage/
+.nyc_output/
 
-# Database
-mongo-data/
+# Cache directories
+.cache/
+.parcel-cache/
+.turbo/
+.temp/
+tmp/
