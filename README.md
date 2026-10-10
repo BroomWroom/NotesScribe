@@ -120,6 +120,9 @@ NotesScribe/
 
 ---
 
+### Deployment link : http://13.61.195.205/
+
+---
 ## License
 
 MIT
